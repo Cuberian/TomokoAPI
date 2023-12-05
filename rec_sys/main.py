@@ -66,7 +66,7 @@ def get_recommendations(user_anime_uids: list[int]):
                                            user_episodes_mode,
                                            max_episodes_value))
         if not pd.isna(row['score']):
-            score_coef = normalize(row['score'], 0, 10, -1, 1)
+            score_coef = normalize(row['score'], 0, 10, -1.5, .5)
 
         # genres_coef = calculate_mean(
         #     cosine_similarity([genres], user_anime_genres).tolist()[0])

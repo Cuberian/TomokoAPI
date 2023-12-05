@@ -80,5 +80,4 @@ async def get_recs_for_user(
     user = await auth_service.get_user_by_id(jwt_data.user_id)
     rec_animes = [service.get_by_mal_id(rec_uid)
                   for rec_uid in get_recommendations([121, 20, 28223, 3588, 28851, 16782])]
-
     return rec_animes

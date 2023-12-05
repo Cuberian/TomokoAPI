@@ -22,7 +22,7 @@ async def valid_anime_id(anime_id: int) -> dict[str, Any]:
             "mal_score":  mal_anime["mean"],
             "mal_ranked":  mal_anime["rank"],
             "mal_popularity":  mal_anime["popularity"],
-            "mal_members":  None,
+            "mal_members":  mal_anime["members"],
         }
 
     return anime
