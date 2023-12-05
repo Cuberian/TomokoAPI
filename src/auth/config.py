@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 
 
 class AuthConfig(BaseSettings):
-    JWT_ALG: str = "rs256"
+    JWT_ALG: str = "HS256"
     JWT_SECRET: str = "secrete"
     JWT_EXP: int = 5  # minutes
 

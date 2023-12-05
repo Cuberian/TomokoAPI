@@ -19,6 +19,7 @@ async def create_user(user: AuthUser) -> dict[str, Any] | None:
         .values(
             {
                 "email": user.email,
+                "is_admin": False,
                 "password": hash_password(user.password),
                 "created_at": datetime.utcnow(),
             }
@@ -30,7 +31,7 @@ async def create_user(user: AuthUser) -> dict[str, Any] | None:
 
 
 async def get_user_by_id(user_id: int) -> dict[str, Any] | None:
-    select_query = select(auth_user).where(auth_user.c.id == user_id)
+    select_query = select(auth_user).where(auth_user.c.user_id == user_id)
 
     return await fetch_one(select_query)
 
@@ -52,6 +53,7 @@ async def create_refresh_token(
         refresh_token=refresh_token,
         expires_at=datetime.utcnow() + timedelta(seconds=auth_config.REFRESH_TOKEN_EXP),
         user_id=user_id,
+        created_at=datetime.now()
     )
     await execute(insert_query)
 
@@ -81,7 +83,7 @@ async def authenticate_user(auth_data: AuthUser) -> dict[str, Any]:
     if not user:
         raise InvalidCredentials()
 
-    if not check_password(auth_data.password, user["password"]):
+    if not check_password(auth_data.password, bytes.fromhex(user["password"].replace('\\x', ''))):
         raise InvalidCredentials()
 
     return user

@@ -38,7 +38,7 @@ async def get_my_account(
 @router.post("/users/tokens", response_model=AccessTokenResponse)
 async def auth_user(auth_data: AuthUser, response: Response) -> AccessTokenResponse:
     user = await service.authenticate_user(auth_data)
-    refresh_token_value = await service.create_refresh_token(user_id=user["id"])
+    refresh_token_value = await service.create_refresh_token(user_id=user["user_id"])
 
     response.set_cookie(**utils.get_refresh_token_settings(refresh_token_value))
 

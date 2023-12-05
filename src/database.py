@@ -9,6 +9,7 @@ from sqlalchemy import (
     Identity,
     Insert,
     Integer,
+    Float,
     LargeBinary,
     MetaData,
     Select,
@@ -31,9 +32,9 @@ engine = create_async_engine(DATABASE_URL)
 metadata = MetaData(naming_convention=DB_NAMING_CONVENTION)
 
 auth_user = Table(
-    "auth_user",
+    "users",
     metadata,
-    Column("id", Integer, Identity(), primary_key=True),
+    Column("user_id", Integer, Identity(), primary_key=True),
     Column("email", String, nullable=False),
     Column("nickname", String),
     Column("password", LargeBinary, nullable=False),
@@ -46,12 +47,28 @@ refresh_tokens = Table(
     "auth_refresh_token",
     metadata,
     Column("uuid", UUID, primary_key=True),
-    Column("user_id", ForeignKey("auth_user.id", ondelete="CASCADE"), nullable=False),
+    Column("user_id", ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False),
     Column("refresh_token", String, nullable=False),
     Column("expires_at", DateTime, nullable=False),
     Column("created_at", DateTime, server_default=func.now(), nullable=False),
     Column("updated_at", DateTime, onupdate=func.now()),
 )
+
+anime = Table(
+    "animes",
+    metadata,
+    Column("anime_id", Integer, Identity(), primary_key=True),
+    Column("title", String, nullable=False),
+    Column("synopsis", String),
+    Column("episodes", Integer),
+    Column("air_start_date", DateTime),
+    Column("air_end_date", DateTime),
+    Column("mal_score", Float),
+    Column("mal_ranked", Integer),
+    Column("mal_popularity", Integer),
+    Column("mal_members", Integer),
+)
+
 
 
 async def fetch_one(select_query: Select | Insert | Update) -> dict[str, Any] | None:

@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from src.auth.router import router as auth_router
+from src.animes.router import router as anime_router
 from src.config import app_configs, settings
 
 
@@ -23,6 +24,7 @@ async def healthcheck() -> dict[str, str]:
 
 
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+app.include_router(anime_router, prefix="/title", tags=["Animes"])
 # app.include_router(
 #     external_service_router, prefix="/external-service", tags=["External Service Calls"]
 # )
