@@ -17,7 +17,7 @@ class ReviewData(CustomModel):
 class ReviewResponse(CustomModel):
     review_id: int
     anime_id: int
-    text: str | None
+    text: str | None = Field(None)
     overall_score: int = Field(int, ge=0, le=10)
     animation_score: int | None = Field(None, ge=0, le=10)
     sound_score: int | None = Field(None, ge=0, le=10)
@@ -32,6 +32,7 @@ class AnimeData(CustomModel):
     air_start_date: datetime.date
     air_end_date: datetime.date
     mal_score: float | None
+    mal_anime_id: int | None
     mal_ranked: int | None
     mal_popularity: int | None
     mal_members: int | None
@@ -48,7 +49,8 @@ class AnimeResponse(CustomModel):
     mal_ranked: int | None
     mal_popularity: int | None
     mal_members: int | None
-    review: ReviewResponse | None
+    mal_anime_id: int | None = Field(None)
+    review: ReviewResponse | None = Field(None)
 
 
 

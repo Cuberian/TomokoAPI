@@ -58,6 +58,7 @@ anime = Table(
     "animes",
     metadata,
     Column("anime_id", Integer, Identity(), primary_key=True),
+    Column("mal_anime_id", Integer),
     Column("title", String, nullable=False),
     Column("synopsis", String),
     Column("episodes", Integer),

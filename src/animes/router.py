@@ -26,19 +26,17 @@ async def get_top_5_animes():
     res = []
 
     for item in animes:
-        air_start_date = convert_date(item['start_date']).date()
-        air_end_date = convert_date(item['end_date']).date()
-
         res.append(AnimeResponse(
-            anime_id=item['id'],
+            anime_id=item['anime_id'],
+            mal_anime_id=item['mal_anime_id'],
             title=item['title'],
             synopsis=item['synopsis'],
-            episodes=item['num_episodes'],
-            air_start_date=air_start_date,
-            air_end_date=air_end_date,
-            mal_score=item['mean'],
-            mal_ranked=item['rank'],
-            mal_popularity=item['popularity'],
+            episodes=item['episodes'],
+            air_start_date=item['air_start_date'],
+            air_end_date=item['air_end_date'],
+            mal_score=item['mal_score'],
+            mal_ranked=item['mal_ranked'],
+            mal_popularity=item['mal_popularity'],
             mal_members=None,
             review=None
         ))

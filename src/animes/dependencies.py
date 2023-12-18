@@ -4,7 +4,7 @@ from src.animes.schemas import ReviewData, AnimeData
 from src.auth.jwt import parse_jwt_user_data
 from src.exceptions import NotFound
 from deep_translator import GoogleTranslator
-from fastapi import Depends
+
 
 
 async def valid_anime_id(anime_id: int) -> dict[str, Any]:
@@ -19,7 +19,8 @@ async def valid_anime_id(anime_id: int) -> dict[str, Any]:
         translated = GoogleTranslator(source='auto', target='ru')
         anime = AnimeData(
             title=mal_anime["title"],
-            synopsis=translated.translate(mal_anime["synopsis"]),
+            mal_anime_id=mal_anime["mal_anime_id"],
+            synopsis=translated.translate(mal_anime["synopsis"]).replace("[Написано MAL Rewrite]", ""),
             episodes=mal_anime["num_episodes"],
             air_start_date=mal_anime["air_start_date"],
             air_end_date=mal_anime["air_end_date"],
