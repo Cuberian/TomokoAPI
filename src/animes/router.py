@@ -17,9 +17,9 @@ from src.animes import service
 router = APIRouter()
 
 
-@router.post("/top", status_code=status.HTTP_200_OK, response_model=list[AnimeResponse])
+@router.get("/top", status_code=status.HTTP_200_OK, response_model=list[AnimeResponse])
 async def get_top_5_animes():
-    user = await service.get_top_5_anime()
+    user = await service.get_top_5_animes()
     return {
         "email": user["email"],
     }
