@@ -1,6 +1,10 @@
 from typing import Any
 from src.animes import service
+from src.animes.schemas import ReviewData, AnimeData
+from src.auth.jwt import parse_jwt_user_data
 from src.exceptions import NotFound
+from deep_translator import GoogleTranslator
+from fastapi import Depends
 
 
 async def valid_anime_id(anime_id: int) -> dict[str, Any]:
@@ -12,17 +16,19 @@ async def valid_anime_id(anime_id: int) -> dict[str, Any]:
         if not mal_anime:
             raise NotFound()
 
-        anime = {
-            "anime_id": anime_id,
-            "title":  mal_anime["title"],
-            "synopsis":  mal_anime["synopsis"],
-            "episodes":  mal_anime["num_episodes"],
-            "air_start_date":  mal_anime["start_date"],
-            "air_end_date":  mal_anime["end_date"],
-            "mal_score":  mal_anime["mean"],
-            "mal_ranked":  mal_anime["rank"],
-            "mal_popularity":  mal_anime["popularity"],
-            "mal_members":  mal_anime["members"],
-        }
+        translated = GoogleTranslator(source='auto', target='ru')
+        anime = AnimeData(
+            title=mal_anime["title"],
+            synopsis=translated.translate(mal_anime["synopsis"]),
+            episodes=mal_anime["num_episodes"],
+            air_start_date=mal_anime["air_start_date"],
+            air_end_date=mal_anime["air_end_date"],
+            mal_score=mal_anime["mal_score"],
+            mal_ranked=mal_anime["mal_ranked"],
+            mal_popularity=mal_anime["mal_popularity"],
+            mal_members=mal_anime["mal_members"],
+        )
+
+        anime = await service.create_anime(anime)
 
     return anime

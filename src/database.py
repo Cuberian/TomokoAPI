@@ -70,6 +70,21 @@ anime = Table(
 )
 
 
+review = Table(
+    "reviews",
+    metadata,
+    Column("review_id", Integer, Identity(), primary_key=True),
+    Column("anime_id", Integer, nullable=False),
+    Column("user_id", Integer, nullable=False),
+    Column("text", String),
+    Column("overall_score", Integer, nullable=False),
+    Column("animation_score", Integer),
+    Column("sound_score", Integer),
+    Column("character_score", Integer),
+    Column("enjoyment_score", Integer),
+)
+
+
 
 async def fetch_one(select_query: Select | Insert | Update) -> dict[str, Any] | None:
     async with engine.begin() as conn:
