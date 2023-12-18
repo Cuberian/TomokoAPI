@@ -39,7 +39,8 @@ async def get_top_5_animes():
             mal_score=item['mean'],
             mal_ranked=item['rank'],
             mal_popularity=item['popularity'],
-            mal_members=None
+            mal_members=None,
+            review=None
         ))
 
     return res
