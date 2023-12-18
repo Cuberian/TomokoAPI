@@ -57,6 +57,7 @@ async def create_anime(anime_data: AnimeData) -> dict[str, Any] | None:
         insert(anime)
         .values(
             {
+                "anime_id": anime_data.mal_anime_id,
                 "title": anime_data.title,
                 "synopsis": anime_data.synopsis,
                 "episodes": anime_data.episodes,

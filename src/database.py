@@ -70,6 +70,22 @@ anime = Table(
     Column("mal_members", Integer),
 )
 
+catalog = Table(
+    "catalogs",
+    metadata,
+    Column("catalog_id", Integer, Identity(), primary_key=True),
+    Column("name", String, nullable=False),
+    Column("description", String),
+    Column("is_preview", Boolean),
+)
+
+catalog_anime = Table(
+    "catalog_animes",
+    metadata,
+    Column("catalog_anime_id", Integer, Identity(), primary_key=True),
+    Column("catalog_id", Integer, nullable=False),
+    Column("anime_id", Integer, nullable=False),
+)
 
 review = Table(
     "reviews",
