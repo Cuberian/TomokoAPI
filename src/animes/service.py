@@ -3,16 +3,27 @@ from typing import Any, List
 import requests
 from sqlalchemy import insert, select
 from src.animes.config import anime_config
-from src.animes.schemas import ReviewData, AnimeData
+from src.animes.schemas import ReviewData, AnimeData, AnimeResponse
 from src.database import anime, fetch_one, review, execute
 from mal import Anime
 
 
 async def get_top_5_animes() -> List[dict[str, Any]] | None:
     top_5 = requests.get("https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=5",
-                         headers={'Authorization': f'Bearer {anime_config.MAL_API_KEY}'})
+                         headers={'Authorization': f'Bearer {anime_config.MAL_API_KEY}',
+                                  'Origin': 'http://127.0.0.1:8000'})
     data = top_5.json()
-    return data
+    res = []
+    for item in data['data']:
+        anime_item = item['node']
+        anime_res = requests.get(f"https://api.myanimelist.net/v2/anime/{anime_item['id']}?fields=id,title,main_picture,"
+                                 f"alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,rating,"
+                                 f"num_episodes,rating,pictures",
+                                 headers={'Authorization': f'Bearer {anime_config.MAL_API_KEY}',
+                                          'Origin': 'http://127.0.0.1:8000'})
+        anime_data = anime_res.json()
+        res.append(anime_data)
+    return res
 
 
 async def create_anime(anime_data: AnimeData) -> dict[str, Any] | None:
@@ -35,6 +46,11 @@ async def create_anime(anime_data: AnimeData) -> dict[str, Any] | None:
     )
 
     return await fetch_one(insert_query)
+
+
+async def get_user_review(user_id: int, anime_id: int) -> dict[str, Any] | None:
+    select_query = select(review).where(review.c.anime_id == anime_id and review.c.user_id == user_id)
+    return await fetch_one(select_query)
 
 
 async def create_or_update_review(user_id: int, anime_id: int, review_data: ReviewData) -> dict[str, Any] | None:

@@ -1,10 +1,12 @@
+from datetime import datetime
 from typing import Any, Mapping
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Response, status
 from src.animes.schemas import AnimeResponse, ReviewData, ReviewResponse
 from src.animes import service, utils
+from src.auth.exceptions import AuthRequired
 from src.auth.schemas import JWTData
-from src.auth.jwt import parse_jwt_user_data
+from src.auth.jwt import parse_jwt_user_data, parse_jwt_user_data_optional
 from src.animes.dependencies import (
     valid_anime_id
 )
@@ -13,20 +15,44 @@ from rec_sys.main import (
 )
 from src.auth import service as auth_service
 from src.animes import service
+from src.animes.utils import convert_date
 
 router = APIRouter()
 
 
 @router.get("/top", status_code=status.HTTP_200_OK, response_model=list[AnimeResponse])
 async def get_top_5_animes():
-    user = await service.get_top_5_animes()
-    return {
-        "email": user["email"],
-    }
+    animes = await service.get_top_5_animes()
+    res = []
+
+    for item in animes:
+        air_start_date = convert_date(item['start_date']).date()
+        air_end_date = convert_date(item['end_date']).date()
+
+        res.append(AnimeResponse(
+            anime_id=item['id'],
+            title=item['title'],
+            synopsis=item['synopsis'],
+            episodes=item['num_episodes'],
+            air_start_date=air_start_date,
+            air_end_date=air_end_date,
+            mal_score=item['mean'],
+            mal_ranked=item['rank'],
+            mal_popularity=item['popularity'],
+            mal_members=None
+        ))
+
+    return res
 
 
 @router.get("/anime/{anime_id}", status_code=status.HTTP_200_OK, response_model=AnimeResponse)
-async def get_anime_by_id(anime: AnimeResponse = Depends(valid_anime_id)):
+async def get_anime_by_id(jwt_data: JWTData = Depends(parse_jwt_user_data_optional),
+                          anime: AnimeResponse = Depends(valid_anime_id)):
+
+    review = None
+    if jwt_data is not None:
+        review = await service.get_user_review(jwt_data.user_id, anime['anime_id'])
+
     return {
         "anime_id": anime["anime_id"],
         "title":  anime["title"],
@@ -38,6 +64,7 @@ async def get_anime_by_id(anime: AnimeResponse = Depends(valid_anime_id)):
         "mal_ranked":  anime["mal_ranked"],
         "mal_popularity":  anime["mal_popularity"],
         "mal_members":  anime["mal_members"],
+        "review": review
     }
 
 
