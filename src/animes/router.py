@@ -48,7 +48,6 @@ async def get_top_5_animes():
 @router.get("/anime/{anime_id}", status_code=status.HTTP_200_OK, response_model=AnimeResponse)
 async def get_anime_by_id(jwt_data: JWTData = Depends(parse_jwt_user_data_optional),
                           anime: AnimeResponse = Depends(valid_anime_id)):
-
     review = None
     if jwt_data is not None:
         review = await service.get_user_review(jwt_data.user_id, anime['anime_id'])
@@ -105,7 +104,6 @@ async def put_anime_score_by_id(review_data: ReviewData,
 
 @router.get("/recommendations", status_code=status.HTTP_200_OK, response_model=list[AnimeResponse])
 async def get_recs_for_user(
-        worker: BackgroundTasks,
         jwt_data: JWTData = Depends(parse_jwt_user_data),
 ):
     reviews = await service.get_user_reviews(jwt_data.user_id)

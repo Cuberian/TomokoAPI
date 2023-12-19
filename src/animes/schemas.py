@@ -29,8 +29,8 @@ class AnimeData(CustomModel):
     title: str
     synopsis: str
     episodes: int
-    air_start_date: datetime.date
-    air_end_date: datetime.date
+    air_start_date: datetime.date | None
+    air_end_date: datetime.date | None
     mal_score: float | None
     mal_anime_id: int | None
     mal_ranked: int | None
@@ -43,8 +43,8 @@ class AnimeResponse(CustomModel):
     title: str
     synopsis: str
     episodes: int
-    air_start_date: datetime.date
-    air_end_date: datetime.date
+    air_start_date: datetime.date | None
+    air_end_date: datetime.date | None
     mal_score: float | None
     mal_ranked: int | None
     mal_popularity: int | None

@@ -54,6 +54,10 @@ async def get_top_5_animes() -> List[dict[str, Any]] | None:
 
 
 async def create_anime(anime_data: AnimeData) -> dict[str, Any] | None:
+    exist_anime = await get_by_id(anime_data.mal_anime_id)
+    if exist_anime is not None:
+        return exist_anime
+
     insert_query = (
         insert(anime)
         .values(
@@ -130,7 +134,7 @@ async def create_or_update_review(user_id: int, anime_id: int, review_data: Revi
 
 
 async def get_by_id(anime_id: int) -> dict[str, Any] | None:
-    select_query = select(anime).where(anime.c.anime_id == anime_id or anime.c.mal_anime_id == anime_id)
+    select_query = select(anime).where(anime.c.anime_id == anime_id)
     anime_item = await fetch_one(select_query)
 
     return anime_item
@@ -145,7 +149,7 @@ def get_by_mal_id(mal_anime_id: int) -> dict[str, Any] | None:
     date_str1, date_str2 = anime_obj.aired.split(" to ") if " to " in anime_obj.aired \
         else [anime_obj.aired, anime_obj.aired]
     air_start_date = convert_date(date_str1).date()
-    air_end_date = convert_date(date_str2).date()
+    air_end_date = None if date_str2 == "?" else convert_date(date_str2).date()
 
     return {
         "anime_id": mal_anime_id,
