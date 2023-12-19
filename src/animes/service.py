@@ -27,6 +27,8 @@ async def get_top_5_animes() -> List[dict[str, Any]] | None:
 
         anime_db_data = await get_by_id(anime_data['id'])
         if anime_db_data:
+            if anime_db_data['preview_image_url'] is None and len(anime_data['main_picture']) > 0:
+                anime_db_data['preview_image_url'] = anime_data['main_picture']['medium']
             res.append(anime_db_data)
             continue
 
@@ -37,6 +39,7 @@ async def get_top_5_animes() -> List[dict[str, Any]] | None:
         anime_data = AnimeData(
             mal_anime_id=anime_data['id'],
             title=anime_data['title'],
+            preview_image_url=anime_data['main_picture'],
             synopsis=translated.translate(anime_data['synopsis']).replace("[Написано MAL Rewrite]", ""),
             episodes=anime_data['num_episodes'],
             air_start_date=air_start_date,
@@ -55,16 +58,38 @@ async def get_top_5_animes() -> List[dict[str, Any]] | None:
 
 async def create_anime(anime_data: AnimeData) -> dict[str, Any] | None:
     exist_anime = await get_by_id(anime_data.mal_anime_id)
-    if exist_anime is not None:
-        return exist_anime
+    if exist_anime is None:
 
-    insert_query = (
-        insert(anime)
+        insert_query = (
+            insert(anime)
+            .values(
+                {
+                    "anime_id": anime_data.mal_anime_id,
+                    "title": anime_data.title,
+                    "synopsis": anime_data.synopsis,
+                    "preview_image_url": anime_data.preview_image_url,
+                    "episodes": anime_data.episodes,
+                    "air_start_date": anime_data.air_start_date,
+                    "air_end_date": anime_data.air_end_date,
+                    "mal_score": anime_data.mal_score,
+                    "mal_ranked": anime_data.mal_ranked,
+                    "mal_anime_id": anime_data.mal_anime_id,
+                    "mal_popularity": anime_data.mal_popularity,
+                    "mal_members": anime_data.mal_members,
+                }
+            )
+            .returning(anime)
+        )
+
+        return await fetch_one(insert_query)
+
+    update_query = (
+        anime.update()
         .values(
             {
-                "anime_id": anime_data.mal_anime_id,
                 "title": anime_data.title,
                 "synopsis": anime_data.synopsis,
+                "preview_image_url": anime_data.preview_image_url,
                 "episodes": anime_data.episodes,
                 "air_start_date": anime_data.air_start_date,
                 "air_end_date": anime_data.air_end_date,
@@ -74,11 +99,12 @@ async def create_anime(anime_data: AnimeData) -> dict[str, Any] | None:
                 "mal_popularity": anime_data.mal_popularity,
                 "mal_members": anime_data.mal_members,
             }
-        )
-        .returning(anime)
+        ).where(anime.c.anime_id == exist_anime['anime_id'])
     )
 
-    return await fetch_one(insert_query)
+    await execute(update_query)
+    exist_anime = await get_by_id(anime_data.mal_anime_id)
+    return exist_anime
 
 
 async def get_user_review(user_id: int, anime_id: int) -> dict[str, Any] | None:
@@ -130,6 +156,8 @@ async def create_or_update_review(user_id: int, anime_id: int, review_data: Revi
     )
 
     await execute(update_query)
+    exist_review = await fetch_one(select_query)
+
     return exist_review
 
 
@@ -155,6 +183,7 @@ def get_by_mal_id(mal_anime_id: int) -> dict[str, Any] | None:
         "anime_id": mal_anime_id,
         "mal_anime_id": mal_anime_id,
         "title": anime_obj.title,
+        "preview_image_url": anime_obj.image_url,
         "synopsis": anime_obj.synopsis,
         "episodes": anime_obj.episodes,
         "air_start_date": air_start_date,

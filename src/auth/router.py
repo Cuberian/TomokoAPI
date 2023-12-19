@@ -10,6 +10,7 @@ from src.auth.dependencies import (
 )
 from src.auth.jwt import parse_jwt_user_data
 from src.auth.schemas import AccessTokenResponse, AuthUser, JWTData, UserResponse
+from src.animes import service as anime_service
 
 router = APIRouter()
 
@@ -29,9 +30,11 @@ async def get_my_account(
     jwt_data: JWTData = Depends(parse_jwt_user_data),
 ) -> dict[str, str]:
     user = await service.get_user_by_id(jwt_data.user_id)
+    reviews = await anime_service.get_user_reviews(jwt_data.user_id)
 
     return {
         "email": user["email"],
+        "has_reviews": len(reviews) > 0
     }
 
 

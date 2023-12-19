@@ -61,6 +61,7 @@ anime = Table(
     Column("mal_anime_id", Integer),
     Column("title", String, nullable=False),
     Column("synopsis", String),
+    Column("preview_image_url", String),
     Column("episodes", Integer),
     Column("air_start_date", DateTime),
     Column("air_end_date", DateTime),

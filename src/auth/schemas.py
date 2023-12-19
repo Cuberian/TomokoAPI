@@ -38,3 +38,4 @@ class AccessTokenResponse(CustomModel):
 
 class UserResponse(CustomModel):
     email: EmailStr
+    has_reviews: bool

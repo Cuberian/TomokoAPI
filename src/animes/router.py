@@ -33,6 +33,7 @@ async def get_top_5_animes():
             title=item['title'],
             synopsis=item['synopsis'],
             episodes=item['episodes'],
+            preview_image_url=item['preview_image_url'],
             air_start_date=item['air_start_date'],
             air_end_date=item['air_end_date'],
             mal_score=item['mal_score'],
@@ -56,6 +57,7 @@ async def get_anime_by_id(jwt_data: JWTData = Depends(parse_jwt_user_data_option
         "anime_id": anime["anime_id"],
         "title":  anime["title"],
         "synopsis":  anime["synopsis"],
+        "preview_image_url":  anime["preview_image_url"],
         "episodes":  anime["episodes"],
         "air_start_date":  anime["air_start_date"],
         "air_end_date":  anime["air_end_date"],
@@ -117,6 +119,7 @@ async def get_recs_for_user(
         anime_data = AnimeData(
             title=anime["title"],
             mal_anime_id=anime["mal_anime_id"],
+            preview_image_url=anime["preview_image_url"],
             synopsis=translated.translate(anime["synopsis"]).replace("[Написано MAL Rewrite]", ""),
             episodes=anime["episodes"],
             air_start_date=anime["air_start_date"],
