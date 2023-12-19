@@ -48,7 +48,7 @@ def get_recommendations(user_anime_uids: list[int]):
     sim_scores = cosine_similarity(anime_test_matrix, anime_matrix).tolist()[0]
     sim_scores = sorted(enumerate(sim_scores), key=lambda i: i[1], reverse=True)
 
-    user_anime_genres = user_anime_data.iloc[:, 10:].values
+    user_anime_genres = user_anime_data.iloc[:, 11:].values
     user_anime_episodes = user_anime_data['episodes'].values
     max_episodes_value = user_anime_data['episodes'].max()
     user_episodes_mode = min(get_mode(user_anime_episodes))
@@ -56,32 +56,39 @@ def get_recommendations(user_anime_uids: list[int]):
     upd_sim_scores = []
     for row_idx, sim_score in sim_scores:
         row = anime_data.iloc[row_idx]
-        genres = anime_data.iloc[row_idx, 10:].values
+        genres = anime_data.iloc[row_idx, 11:].values
 
         episodes_coef = 0
-        score_coef = 0
-
+        score_coef = -10
+        p_coef = 0
         if not pd.isna(row['episodes']):
             episodes_coef = (1 - normalize(row['episodes'],
                                            user_episodes_mode,
                                            max_episodes_value))
         if not pd.isna(row['score']):
-            score_coef = normalize(row['score'], 0, 10, -1.5, .5)
+            score_coef = -10 if row['score'] <= 7 else normalize(row['score'], 0, 10, 0, 1)
 
-        # genres_coef = calculate_mean(
-        #     cosine_similarity([genres], user_anime_genres).tolist()[0])
+        if not pd.isna(row['popularity']):
+            p_coef = 0.5 if row['popularity'] < 1000 else -0.5
+
+        genres_coef = calculate_mean(
+             cosine_similarity([genres], user_anime_genres).tolist()[0])
+
+
 
         # print(genres_coef)
         # + (.5 * (1 - abs(sim_score)) * genres_coef)
-        upd_sim_scores.append((row_idx, sim_score + \
-                               (.5 * (1 - abs(sim_score)) * episodes_coef) + \
-                               (.5 * (1 - abs(sim_score)) * score_coef)
-                               ))
+        new_sim_score = sim_score + \
+                               (.5 * episodes_coef) + \
+                               (0.7 * score_coef) + \
+                                p_coef + \
+                               (1 * genres_coef)
+        upd_sim_scores.append((row_idx, new_sim_score))
 
     # Sort anime by similarity
     # sim_scores = sorted(upd_sim_scores, key=lambda i: i[1], reverse=True)
 
-    sim_scores = sorted(enumerate(upd_sim_scores), key=lambda i: i[1], reverse=True)
+    sim_scores = sorted(upd_sim_scores, key=lambda i: i[1], reverse=True)
 
     movie_indexes = [i[0] for i in sim_scores]
 
