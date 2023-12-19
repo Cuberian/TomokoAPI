@@ -85,4 +85,4 @@ def get_recommendations(user_anime_uids: list[int]):
 
     movie_indexes = [i[0] for i in sim_scores]
 
-    return [anime_uid_data[i] for i in movie_indexes[1:11] if i in anime_uid_data]
+    return [anime_uid_data[i] for i in movie_indexes[1:6] if i in anime_uid_data]

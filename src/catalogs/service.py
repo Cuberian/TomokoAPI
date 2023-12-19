@@ -37,9 +37,13 @@ async def get_catalog_animes(catalog_id: int) -> List[dict[str, Any]] | None:
     catalog_items = await fetch_all(c_a_items_query)
     catalog_items_ids = (anime_item['anime_id'] for anime_item in catalog_items)
 
-    anime_items_query = select(anime) \
-        .where(anime.c.anime_id.in_(catalog_items_ids))
-    anime_items = await fetch_all(anime_items_query)
+    # anime_items_query = select(anime) \
+    #     .where(anime.c.anime_id.in_(catalog_items_ids))
+    # anime_items = await fetch_all(anime_items_query)
+    anime_items = []
+    for item in catalog_items_ids:
+        anime_item = anime_service.get_by_mal_id(item)
+        anime_items.append(anime_item)
 
     return anime_items
 
