@@ -156,7 +156,7 @@ def get_by_mal_id(mal_anime_id: int) -> dict[str, Any] | None:
         "mal_anime_id": mal_anime_id,
         "title": anime_obj.title,
         "synopsis": anime_obj.synopsis,
-        "num_episodes": anime_obj.episodes,
+        "episodes": anime_obj.episodes,
         "air_start_date": air_start_date,
         "air_end_date": air_end_date,
         "mal_score": anime_obj.score,

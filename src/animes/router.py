@@ -118,7 +118,7 @@ async def get_recs_for_user(
             title=anime["title"],
             mal_anime_id=anime["mal_anime_id"],
             synopsis=translated.translate(anime["synopsis"]).replace("[Написано MAL Rewrite]", ""),
-            episodes=anime["num_episodes"],
+            episodes=anime["episodes"],
             air_start_date=anime["air_start_date"],
             air_end_date=anime["air_end_date"],
             mal_score=anime["mal_score"],
