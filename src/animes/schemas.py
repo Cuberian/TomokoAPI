@@ -28,7 +28,7 @@ class ReviewResponse(CustomModel):
 class AnimeData(CustomModel):
     title: str
     synopsis: str
-    episodes: int
+    episodes: int | None
     air_start_date: datetime.date | None
     air_end_date: datetime.date | None
     mal_score: float | None
@@ -42,7 +42,7 @@ class AnimeResponse(CustomModel):
     anime_id: int
     title: str
     synopsis: str
-    episodes: int
+    episodes: int | None
     air_start_date: datetime.date | None
     air_end_date: datetime.date | None
     mal_score: float | None
