@@ -6,7 +6,7 @@ from src.models import CustomModel
 
 
 class ReviewData(CustomModel):
-    text: str | None
+    text: str | None = Field(None)
     overall_score: int = Field(int, ge=0, le=10)
     animation_score: int | None = Field(None, ge=0, le=10)
     sound_score: int | None = Field(None, ge=0, le=10)

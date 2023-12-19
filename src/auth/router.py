@@ -40,7 +40,7 @@ async def auth_user(auth_data: AuthUser, response: Response) -> AccessTokenRespo
     user = await service.authenticate_user(auth_data)
     refresh_token_value = await service.create_refresh_token(user_id=user["user_id"])
 
-    response.set_cookie(**utils.get_refresh_token_settings(refresh_token_value))
+    # response.set_cookie(**utils.get_refresh_token_settings(refresh_token_value))
 
     return AccessTokenResponse(
         access_token=jwt.create_access_token(user=user),
@@ -58,7 +58,7 @@ async def refresh_tokens(
     refresh_token_value = await service.create_refresh_token(
         user_id=refresh_token["user_id"]
     )
-    response.set_cookie(**utils.get_refresh_token_settings(refresh_token_value))
+    # response.set_cookie(**utils.get_refresh_token_settings(refresh_token_value))
 
     worker.add_task(service.expire_refresh_token, refresh_token["uuid"])
     return AccessTokenResponse(
@@ -74,6 +74,6 @@ async def logout_user(
 ) -> None:
     await service.expire_refresh_token(refresh_token["uuid"])
 
-    response.delete_cookie(
-        **utils.get_refresh_token_settings(refresh_token["refresh_token"], expired=True)
-    )
+    # response.delete_cookie(
+    #     **utils.get_refresh_token_settings(refresh_token["refresh_token"], expired=True)
+    # )

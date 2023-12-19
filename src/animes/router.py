@@ -1,8 +1,9 @@
 from datetime import datetime
 from typing import Any, Mapping
 
+from deep_translator import GoogleTranslator
 from fastapi import APIRouter, BackgroundTasks, Depends, Response, status
-from src.animes.schemas import AnimeResponse, ReviewData, ReviewResponse
+from src.animes.schemas import AnimeResponse, ReviewData, ReviewResponse, AnimeData
 from src.animes import service, utils
 from src.auth.exceptions import AuthRequired
 from src.auth.schemas import JWTData
@@ -104,9 +105,31 @@ async def put_anime_score_by_id(review_data: ReviewData,
 
 @router.get("/recommendations", status_code=status.HTTP_200_OK, response_model=list[AnimeResponse])
 async def get_recs_for_user(
-    jwt_data: JWTData = Depends(parse_jwt_user_data),
+        worker: BackgroundTasks,
+        jwt_data: JWTData = Depends(parse_jwt_user_data),
 ):
-    user = await auth_service.get_user_by_id(jwt_data.user_id)
-    rec_animes = [service.get_by_mal_id(rec_uid)
-                  for rec_uid in get_recommendations([121, 20, 28223, 3588, 28851, 16782])]
+    reviews = await service.get_user_reviews(jwt_data.user_id)
+
+    anime_ids = [item['anime_id'] for item in reviews]
+
+    rec_animes = [service.get_by_mal_id(rec_uid) for rec_uid in get_recommendations(anime_ids)]
+    translated = GoogleTranslator(source='auto', target='ru')
+    res = []
+    for anime in rec_animes:
+        anime_data = AnimeData(
+            title=anime["title"],
+            mal_anime_id=anime["mal_anime_id"],
+            synopsis=translated.translate(anime["synopsis"]).replace("[Написано MAL Rewrite]", ""),
+            episodes=anime["num_episodes"],
+            air_start_date=anime["air_start_date"],
+            air_end_date=anime["air_end_date"],
+            mal_score=anime["mal_score"],
+            mal_ranked=anime["mal_ranked"],
+            mal_popularity=anime["mal_popularity"],
+            mal_members=anime["mal_members"],
+        )
+
+        anime_data = await service.create_anime(anime_data)
+        res.append(anime_data)
+
     return rec_animes

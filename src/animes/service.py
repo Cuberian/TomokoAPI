@@ -3,7 +3,7 @@ import requests
 from sqlalchemy import insert, select
 from src.animes.config import anime_config
 from src.animes.schemas import ReviewData, AnimeData
-from src.database import anime, fetch_one, review, execute
+from src.database import anime, fetch_one, fetch_all, review, execute
 from mal import Anime
 from src.animes.utils import convert_date
 from deep_translator import GoogleTranslator
@@ -17,11 +17,12 @@ async def get_top_5_animes() -> List[dict[str, Any]] | None:
     res = []
     for item in data['data']:
         anime_item = item['node']
-        anime_res = requests.get(f"https://api.myanimelist.net/v2/anime/{anime_item['id']}?fields=id,title,main_picture,"
-                                 f"alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,rating,"
-                                 f"num_episodes,rating,pictures",
-                                 headers={'Authorization': f'Bearer {anime_config.MAL_API_KEY}',
-                                          'Origin': 'http://127.0.0.1:8000'})
+        anime_res = requests.get(
+            f"https://api.myanimelist.net/v2/anime/{anime_item['id']}?fields=id,title,main_picture,"
+            f"alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,rating,"
+            f"num_episodes,rating,pictures",
+            headers={'Authorization': f'Bearer {anime_config.MAL_API_KEY}',
+                     'Origin': 'http://127.0.0.1:8000'})
         anime_data = anime_res.json()
 
         anime_db_data = await get_by_id(anime_data['id'])
@@ -81,6 +82,11 @@ async def get_user_review(user_id: int, anime_id: int) -> dict[str, Any] | None:
     return await fetch_one(select_query)
 
 
+async def get_user_reviews(user_id: int) -> List[dict[str, Any]] | None:
+    select_query = select(review).where(review.c.user_id == user_id)
+    return await fetch_all(select_query)
+
+
 async def create_or_update_review(user_id: int, anime_id: int, review_data: ReviewData) -> dict[str, Any] | None:
     select_query = select(review).where(review.c.anime_id == anime_id and review.c.user_id == user_id)
     exist_review = await fetch_one(select_query)
@@ -125,17 +131,24 @@ async def create_or_update_review(user_id: int, anime_id: int, review_data: Revi
 
 async def get_by_id(anime_id: int) -> dict[str, Any] | None:
     select_query = select(anime).where(anime.c.anime_id == anime_id or anime.c.mal_anime_id == anime_id)
-    return await fetch_one(select_query)
+    anime_item = await fetch_one(select_query)
+
+    return anime_item
 
 
 def get_by_mal_id(mal_anime_id: int) -> dict[str, Any] | None:
     anime_obj = Anime(mal_anime_id)
 
-    date_str1, date_str2 = anime_obj.aired.split(" to ")
+    if anime_obj is None:
+        return None
+
+    date_str1, date_str2 = anime_obj.aired.split(" to ") if " to " in anime_obj.aired \
+        else [anime_obj.aired, anime_obj.aired]
     air_start_date = convert_date(date_str1).date()
     air_end_date = convert_date(date_str2).date()
 
     return {
+        "anime_id": mal_anime_id,
         "mal_anime_id": mal_anime_id,
         "title": anime_obj.title,
         "synopsis": anime_obj.synopsis,

@@ -6,7 +6,6 @@ from src.exceptions import NotFound
 from deep_translator import GoogleTranslator
 
 
-
 async def valid_anime_id(anime_id: int) -> dict[str, Any]:
     anime = await service.get_by_id(anime_id)
 
